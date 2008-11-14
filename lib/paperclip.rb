@@ -206,8 +206,35 @@ module Paperclip
         attachment_for(name).file?
       end
 
+      define_method "url" do |*args|
+        attachment_for(name) ? attachment_for(name).url(*args) : ""
+      end
+
       validates_each(name) do |record, attr, value|
         value.send(:flush_errors) unless value.valid?
+      end
+    end
+
+    def has_one_upload type, klass_name
+      has_one type, :as => :for, :class_name => klass_name.to_s
+
+      # Allows for methods like "object.thumbnail_url" instead of doing "object.image.url(:thumbnail)"
+      define_method "#{type}_url" do |*args|
+        if send(type)
+          send(type).url(*args)
+        else
+          ""
+        end
+      end
+
+      # Allows for doing "object.image = file"
+      define_method "#{type}=" do |file|
+        unless file.blank?
+          if self.send(type)
+            self.send(type).destroy
+          end
+          instance_variable_set "@#{type}", klass_name.new(type => file, :for => self)
+        end
       end
     end
 
