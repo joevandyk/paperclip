@@ -17,10 +17,8 @@ end
 def for_all_attachments
   klass = obtain_class
   names = obtain_attachments
-  ids   = klass.connection.select_values("SELECT #{klass.primary_key} FROM #{klass.table_name}")
 
-  ids.each do |id|
-    instance = klass.find(id)
+  klass.find(:all).each do |instance|
     names.each do |name|
       result = if instance.send("#{ name }?")
                  yield(instance, name)
