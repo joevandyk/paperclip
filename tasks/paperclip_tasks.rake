@@ -1,3 +1,5 @@
+require File.join(File.dirname(__FILE__), '/pseudo_cursors')
+
 def obtain_class
   class_name = ENV['CLASS'] || ENV['class']
   raise "Must specify CLASS" unless class_name
@@ -15,10 +17,11 @@ def obtain_attachments
 end
 
 def for_all_attachments
+  include PseudoCursors
   klass = obtain_class
   names = obtain_attachments
 
-  klass.find(:all).each do |instance|
+  klass.find_each do |instance|
     names.each do |name|
       result = if instance.send("#{ name }?")
                  yield(instance, name)
